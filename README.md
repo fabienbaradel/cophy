@@ -1,6 +1,6 @@
 # CoPhy: Counterfactual Learning of Physical Dynamics
 
-This repository contains the dataloaders for the benchmark introduced in ["CoPhy: Counterfactual Learning of Physical Dynamics", F. Baradel, N. Neverova, J. Mille, G. Mori, C. Wolf, ICLR'2020](https://arxiv.org/abs/1909.12000).
+This repository contains the code associated to the paper ["CoPhy: Counterfactual Learning of Physical Dynamics", F. Baradel, N. Neverova, J. Mille, G. Mori, C. Wolf, ICLR'2020](https://arxiv.org/abs/1909.12000).
 
 Links: [Project page](https://projet.liris.cnrs.fr/cophy/) | [Data](https://zenodo.org/record/3674790#.XotcTtMza-o) | [Video](https://youtu.be/HHbBJK6F8nE)
 
@@ -31,6 +31,7 @@ CoPhy_224/
     ├── ...
     └── 9999
 ```
+
 
 Below are some explanations for the files associated to each dataset:
 * BlocktowerCF
@@ -90,12 +91,16 @@ Below are some explanations for the files associated to each dataset:
 
 You can find the train/val/test splits [here](https://zenodo.org/record/3674790/files/splits.zip?download=1) or directly on the subdirectory ```dataloaders/splits``` of this repo.
 
-By running the python script ```bias_free_blocktower.py```, you can see that our datasets and in particularly BlocktowerCF is close to bias-free w.r.t. the overall stability of the full blocktwer.
+By running the python script ```bias_free_blocktower.py```, you can see that the BlocktowerCF dataset is close to bias-free w.r.t. the overall stability of the full blocktwer.
 ```
 COPHY=<ROOT-LOCATION-OF-COPHY>
 python bias_free_blocktower.py --dir $COPHY/blocktowerCF/3 # for blocktower composed of 3 blocks
 python bias_free_blocktower.py --dir $COPHY/blocktowerCF/4 # and for blocktower composed of 4 blocks
 ```
+
+## Requirements
+The code was tested 16.04 with Anaconda under Python 3.6 and Pytorch-1.4.
+One GPU is required for training and testing.
 
 ## Dataloaders
 We provide the dataloaders for each dataset in the directory ```dataloaders ``` in this repo:
@@ -123,45 +128,72 @@ You can do the same for the two other datasets.
 
 ## Training
 ### Training the derendering
-The first step is to train the derendering modules for each dataset.
+The first step consist of training the derendering module for each dataset.
 This can be done by running the following script:
 ```
-COPHY=/tmp/CoPhy_224
-LOGDIR=/tmp/logdir/derendering
+DERENDERING_DIR=/tmp/logdir/derendering
 ./derendering/train_derendering.sh $COPHY $LOGDIR
 ```
-The pre-trained checkpoints for each dataset are located in the repository in the subdirectory ```ckpts/derendering/```
+If you don't want to train the derendering module, you can find pre-trained checkpoints for each dataset are located in the repository in the subdirectory ```ckpts/derendering/```
 
 For speeding up the training procedure for the counterfactual learning part, we can extract the 3D position of each object using the derendering modules.
 This can be done using the following command line:
 ```
 DERENDERING_DIR=./ckpts/derendering
-OUT_DIR=/tmp/extracted_obj_visu_prop
+PREXTRACTED_OBJ=/tmp/extracted_obj_visu_prop
 ./derendering/extract_3d_pose.sh $COPHY $DERENDERING_DIR $OUT_DIR
 ```
-This is extracting the object presence, 3D pose and bounding box locations for each dataset splits.
+This is extracting the object presence, 3D pose and bounding box locations for each dataset split.
 
 ### Copying baseline
-Scripts for evaluating the copying baseine ('Copy C') on all test sets:
+Before training CoPhyNet, you can have a look at naive baselines such as copying the present in the future (denoted 'Copy C').
+Running the evaluation on all datasets and all splits can be done using the following script:
 ```
 LOG_DIR=/tmp/log_dir/copy_c
-COPHY=/storage/Datasets/CoPhy/CoPhy_224
-DERENDERING=./ckpts/derendering
 ./cf_learning/run_copying_baselines.sh $LOG_DIR $COPHY $DERENDERING
 ```
 
 ### Training CoPhyNet from estimated poses
-Script for training on all datasets as well as testing for all train/test splits.
+Now, you can train CoPhyNet and evaluating its performance for each train/val/test split.
+This can be done using the following command:
 ```
 LOG_DIR=/tmp/log_dir/cophynet
-COPHY=/storage/Datasets/CoPhy/CoPhy_224
-DERENDERING=./ckpts/derendering
-PREXTRACTED_OBJ=/storage/Datasets/CoPhy/extracted_object_properties
-./cf_learning/train_cophynet.sh $LOG_DIR $COPHY $DERENDERING $PREXTRACTED_OBJ
+./cf_learning/train_cophynet.sh $LOG_DIR $COPHY $DERENDERING_DIR $PREXTRACTED_OBJ
 ```
+You can find a file ```test.txt``` in each log directory which indicates the final performance on the test set.
 
-### Evaluation from pre-trained models
-TODO
+### Evaluation using pre-trained models
+We have also released some pre-trained models.
+For example for the BlocktwerCF dataset, using the command below you can evaluate the model trained on blocktower composed of 3 blocks under normal settings on the test set which contains only towers composed of 4 blocks.
+```
+LOGDIR=/tmp/
+python cf_learning/main.py \
+--dataset_dir $COPHY/blocktowerCF
+--pretrained_ckpt ./ckpts/cophynet/blocktowerCF/3/normal/model_state_dict.pt
+--log_dir $LOGDIR/blocktowerCF/3/normal_4
+--dataset_name blocktower
+--model cophynet
+--num_objects 4
+--type normal
+--evaluate
+```
+You should reach a performance around 0.480.
+You can find the pre-trained models under different settings (3/4 balls, normal/generalization confounder distribution) in the subdirectory ```ckpts/cophynet/cophynet```.
+
+
+One more example for the Balls dataset.
+Run the following command for evaluating on the test set composed of 2 moving balls only, the model trained on 4 balls.
+```
+LOGDIR=/tmp/
+python cf_learning/main.py \
+--dataset_dir $COPHY/ballsCF \
+--pretrained_ckpt ./ckpts/cophynet/ballsCF/4/model_state_dict.pt \
+--log_dir $LOGDIR/ballsCF/4_2 \
+--dataset_name balls \
+--model cophynet \
+--num_objects 5 \
+--evaluate
+```
 
 ## Citation
 If you find this paper or the benchmark useful for your research, please cite our paper.

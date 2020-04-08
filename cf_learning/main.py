@@ -316,19 +316,19 @@ def main(args):
     model_fn = dict_model_fn[args.model]
     model = model_fn(num_objects=test_loader.dataset.num_objects).to(device)
 
-    # load the derendering module
-    pretrained_dict = torch.load(args.derendering_ckpt)
-    pretrained_dict = {'derendering.' + k: v for k, v in pretrained_dict.items()}
-    model_dict = model.state_dict()
-    pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}
-    model.load_state_dict(pretrained_dict, strict=False)
-
     # freeze derendering
     for param in model.derendering.parameters():
         param.requires_grad = False
 
     # optim and training
     if len(get_trainable_params(model)) > 0 and not args.evaluate:
+        # load the derendering module
+        pretrained_dict = torch.load(args.derendering_ckpt)
+        pretrained_dict = {'derendering.' + k: v for k, v in pretrained_dict.items()}
+        model_dict = model.state_dict()
+        pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}
+        model.load_state_dict(pretrained_dict, strict=False)
+
         optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
         # training
@@ -343,13 +343,22 @@ def main(args):
             torch.save(model.state_dict(), os.path.join(args.log_dir, 'model_state_dict.pt'))
 
     # testing
-    if len(get_trainable_params(model)) > 0 and args.evaluate:
-        # load ckpt
-        model.load_state_dict(torch.load(args.pretrained_ckpt), strict=True)
-    os.makedirs(args.log_dir, exist_ok=True)
-    log_file_test = os.path.join(args.log_dir, 'test.txt')
-    log_dir_test = os.path.join(args.log_dir, 'vizu_test', f"00")
-    validate(model, device, test_loader, log_dir_test, log_file_test, D=D, is_rgb=True)
+    if args.evaluate:
+        if len(get_trainable_params(model)) > 0:
+            # load ckpt
+            model.load_state_dict(torch.load(args.pretrained_ckpt), strict=True)
+        else:
+            # only load the rendering
+            pretrained_dict = torch.load(args.derendering_ckpt)
+            pretrained_dict = {'derendering.' + k: v for k, v in pretrained_dict.items()}
+            model_dict = model.state_dict()
+            pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}
+            model.load_state_dict(pretrained_dict, strict=False)
+
+        os.makedirs(args.log_dir, exist_ok=True)
+        log_file_test = os.path.join(args.log_dir, 'test.txt')
+        log_dir_test = os.path.join(args.log_dir, 'vizu_test', f"00")
+        validate(model, device, test_loader, log_dir_test, log_file_test, D=D, is_rgb=True)
 
 
 if __name__ == "__main__":

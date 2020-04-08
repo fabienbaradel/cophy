@@ -31,20 +31,18 @@ done
 # 4->3
 python cf_learning/main.py \
         --dataset_dir $COPHY/blocktowerCF/ \
-        --derendering_ckpt $DERENDERING/blocktowerCF/model_state_dict.pt \
         --pretrained_ckpt $LOG_DIR/blocktowerCF/3/normal/model_state_dict.pt \
-        --log_dir $LOG_DIR/blocktowerCF \
+        --log_dir $LOG_DIR/blocktowerCF/4/normal_3 \
         --dataset_name blocktower \
-        --model copy_c --num_objects 4 --type normal --evaluate
+        --model cophynet --num_objects 4 --type normal --evaluate
 
 # 3->4
 python cf_learning/main.py \
         --dataset_dir $COPHY/blocktowerCF/ \
-        --derendering_ckpt $DERENDERING/blocktowerCF/model_state_dict.pt \
         --pretrained_ckpt $LOG_DIR/blocktowerCF/4/normal/model_state_dict.pt \
-        --log_dir $LOG_DIR/blocktowerCF \
+        --log_dir $LOG_DIR/blocktowerCF/3/normal_4 \
         --dataset_name blocktower \
-        --model copy_c --num_objects 3 --type normal --evaluate
+        --model cophynet --num_objects 3 --type normal --evaluate
 
 
 # BallsCF
@@ -63,11 +61,10 @@ for k in 2 3 5 6
 do
     python cf_learning/main.py \
             --dataset_dir $COPHY/ballsCF/ \
-            --derendering_ckpt $DERENDERING/ballsCF/model_state_dict.pt \
             --pretrained_ckpt $LOG_DIR/ballsCF/4/model_state_dict.pt \
-            --log_dir $LOG_DIR/ballsCF \
+            --log_dir $LOG_DIR/ballsCF/4_$k \
             --dataset_name balls \
-            --model copy_c --num_objects $k --type normal --evaluate
+            --model cophynet --num_objects $k --type normal --evaluate
 done
 
 # CollisionCF
@@ -81,4 +78,3 @@ python cf_learning/main.py \
       --dataset_name collision \
       --model cophynet --num_objects $k \
       --batch_size 32 --workers 10 --epochs 50
-done

@@ -62,7 +62,6 @@ class CoPhyNet(nn.Module):
                                    nn.ReLU(),
                                    )
     D = H
-    # D += 3 if num_objects == 4 else 0 # TODO collisionCF only
     self.D = D
     self.mlp_out = nn.Sequential(nn.Linear(3+H+H, H),
                                  nn.ReLU(),
@@ -229,8 +228,8 @@ class CoPhyNet(nn.Module):
     return pose, stability
 
   def forward(self, rgb_ab, rgb_c,
-    pred_presence_ab, pred_pose_3d_ab,
-    pred_presence_c, pred_pose_3d_c,
+    pred_presence_ab=None, pred_pose_3d_ab=None,
+    pred_presence_c=None, pred_pose_3d_c=None,
     pred_obj_type_ab=None, pred_obj_type_c=None,
   ):
 
@@ -244,7 +243,6 @@ class CoPhyNet(nn.Module):
       presence_c = pred_presence_c
       pose_3d_ab = pred_pose_3d_ab
       pose_3d_c = pred_pose_3d_c
-      obj_type_ab, obj_type_c = pred_obj_type_ab, pred_obj_type_c
 
     # squeeze
     pose_3d_c = pose_3d_c[:,0] # (B,K,3)
@@ -254,7 +252,7 @@ class CoPhyNet(nn.Module):
     seq_o = self.gcn_on_AB(pose_3d_ab, presence_ab) # (B,T,K,H)
 
     # Run a RNN on the outputs of GCN
-    confounders = self.rnn_on_AB_up(seq_o, obj_type_ab) # (B,K,H)
+    confounders = self.rnn_on_AB_up(seq_o) # (B,K,H)
 
     # pred
     out, stability = self.pred_D(confounders, pose_3d_c, presence_c, T=T)
