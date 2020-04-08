@@ -4,7 +4,10 @@ This repository contains the dataloaders for the benchmark introduced in ["CoPhy
 
 Links: [Project page](https://projet.liris.cnrs.fr/cophy/) | [Data](https://zenodo.org/record/3674790#.XotcTtMza-o) | [Video](https://youtu.be/HHbBJK6F8nE)
 
+<p align="center">
 <img src="teaser.png" width="800"/>
+<img src="cophy.gif" width="224" height="224" />
+</p>
 
 ## Dataset
 You first need to download the dataset (18Go) which is hosted on Zenodo by clicking on this [link](https://zenodo.org/record/3674790/files/cophy_224.tar.gz?download=1).
