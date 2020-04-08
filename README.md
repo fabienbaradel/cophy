@@ -104,6 +104,7 @@ dataloaders/
 │   └── collisionCF_val_normal.txt
 └── utils.py # utils functions for load videos, extracting 3D positions etc..;
 ```
+
 First let's make sure that you are able to iterate the elements of each dataset.
 By running the following command line:
 ```
@@ -134,19 +135,34 @@ OUT_DIR=/tmp/extracted_obj_visu_prop
 ```
 This is extracting the object presence, 3D pose and bounding box locations for each dataset splits.
 
+### Copying baseline
+Scripts for evaluating the copying baseine ('Copy C') on all test sets:
+```
+LOG_DIR=/tmp/log_dir/copy_c
+COPHY=/storage/Datasets/CoPhy/CoPhy_224
+DERENDERING=./ckpts/derendering
+./cf_learning/run_copying_baselines.sh $LOG_DIR $COPHY $DERENDERING
+```
 
-### Training from estimated poses
+### Training CoPhyNet from estimated poses
+Script for training on all datasets as well as testing for all train/test splits.
+```
+LOG_DIR=/tmp/log_dir/cophynet
+COPHY=/storage/Datasets/CoPhy/CoPhy_224
+DERENDERING=./ckpts/derendering
+PREXTRACTED_OBJ=/storage/Datasets/CoPhy/extracted_object_properties
+./cf_learning/train_cophynet.sh $LOG_DIR $COPHY $DERENDERING $PREXTRACTED_OBJ
+```
+
+### Evaluation from pre-trained models
 TODO
-
-### Copying baselines
-TODO 
 
 ## Citation
 If you find this paper or the benchmark useful for your research, please cite our paper.
 ```
 @InProceedings{Baradel_2020_ICLR,
 author = {Baradel, Fabien and Neverova, Natalia and Mille, Julien and Mori, Greg and Wolf, Christian},
-title = {CoPhy: Counterfactual Learning of PhÂysical Dynamics},
+title = {CoPhy: Counterfactual Learning of Physical Dynamics},
 booktitle = {ICLR},
 year = {2020}
 }
