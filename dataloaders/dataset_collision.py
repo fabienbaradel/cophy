@@ -191,7 +191,7 @@ def get_obj_type(ex_dir):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Dataloader for CollisionCF.')
     parser.add_argument('--root_dir',
-                        default='/usr/local/google/home/fbaradel/Dataset/CoPhy_224/collisionCF',
+                        default='/tmp/CoPhy_224/collisionCF',
                         type=str,
                         help='Location of the data.')
     args = parser.parse_args()

@@ -114,6 +114,33 @@ You should find two mp4 files in your directory that have been just saved: ```rg
 It corresponds to a (A,B) and (C,D) RGB sequence with the bonding box visualization around each objects.
 You can do the same for the two other datasets.
 
+## Training
+### Training the derendering
+The first step is to train the derendering modules for each dataset.
+This can be done by running the following script:
+```
+COPHY=/tmp/CoPhy_224
+LOGDIR=/tmp/logdir/derendering
+./derendering/train_derendering.sh $COPHY $LOGDIR
+```
+The pre-trained checkpoints for each dataset are located in the repository in the subdirectory ```ckpts/derendering/```
+
+For speeding up the training procedure for the counterfactual learning part, we can extract the 3D position of each object using the derendering modules.
+This can be done using the following command line:
+```
+DERENDERING_DIR=./ckpts/derendering
+OUT_DIR=/tmp/extracted_obj_visu_prop
+./derendering/extract_3d_pose.sh $COPHY $DERENDERING_DIR $OUT_DIR
+```
+This is extracting the object presence, 3D pose and bounding box locations for each dataset splits.
+
+
+### Training from estimated poses
+TODO
+
+### Copying baselines
+TODO 
+
 ## Citation
 If you find this paper or the benchmark useful for your research, please cite our paper.
 ```
