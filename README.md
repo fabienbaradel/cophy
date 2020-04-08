@@ -2,8 +2,9 @@
 
 This repository contains the dataloaders for the benchmark introduced in ["CoPhy: Counterfactual Learning of Physical Dynamics", F. Baradel, N. Neverova, J. Mille, G. Mori, C. Wolf, ICLR'2020](https://arxiv.org/abs/1909.12000).
 
-<p align="center">
 Links: [Project page](https://projet.liris.cnrs.fr/cophy/) | [Data](https://zenodo.org/record/3674790#.XotcTtMza-o) | [Video](https://youtu.be/HHbBJK6F8nE)
+
+<p align="center">
 
 <img src="cophy.gif" width="300" height="300" />
 
