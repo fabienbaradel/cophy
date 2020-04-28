@@ -2,7 +2,7 @@
 
 This repository contains the code associated to the paper ["CoPhy: Counterfactual Learning of Physical Dynamics", F. Baradel, N. Neverova, J. Mille, G. Mori, C. Wolf, ICLR'2020](https://arxiv.org/abs/1909.12000).
 
-Links: [Project page](https://projet.liris.cnrs.fr/cophy/) | [Data](https://zenodo.org/record/3674790#.XotcTtMza-o) | [Video](https://youtu.be/HHbBJK6F8nE)
+Links: [Project page](https://projet.liris.cnrs.fr/cophy/) | [Data](https://zenodo.org/record/3674790#.XotcTtMza-o) | [Video](https://youtu.be/95nqaDV9cYM)
 
 <p align="center">
 
@@ -13,7 +13,7 @@ Links: [Project page](https://projet.liris.cnrs.fr/cophy/) | [Data](https://zeno
 </p>
 
 ## Dataset
-You first need to download the dataset (18Go) which is hosted on Zenodo by clicking on this [link](https://zenodo.org/record/3674790/files/cophy_224.tar.gz?download=1).
+First, you need to download the dataset (224x224 format 18Go) which is hosted on Zenodo by clicking on this [link](https://zenodo.org/record/3674790/files/cophy_224.tar.gz?download=1).
 Then you should unzip the file and you should get data stored like that:
 ```
 CoPhy_224/
@@ -31,6 +31,8 @@ CoPhy_224/
     ├── ...
     └── 9999
 ```
+You can find a version of the dataset with higher resolution (448x448) [here](https://ieee-dataport.org/documents/cophy-counterfactual-learning-physical-dynamics).
+Feel free to use the one ou want. We found that using the resolution 224x224 was enough.
 
 
 Below are some explanations for the files associated to each dataset:
@@ -48,7 +50,7 @@ Below are some explanations for the files associated to each dataset:
     │   ├── colors.txt
     │   ├── rgb.mp4
     │   ├── segm.mp4
-    │   └── states.npy
+    │   └── states.npy # numpy array of shape (T,K,D) where T is the number of timesteps, K is the number of objects and D correspnds to the concatenation of the 3D pose (3), the quaternion angles (4), the pose velocity (3) and the angular velocity (3). The dimension of each information is given in parenthesis. 
     ├── confounders.npy # the confounder information for each block
     └── gravity.txt # the gravity of the scene (also a confounder for this dataset) 
     ```
@@ -91,7 +93,26 @@ Below are some explanations for the files associated to each dataset:
 
 You can find the train/val/test splits [here](https://zenodo.org/record/3674790/files/splits.zip?download=1) or directly on the subdirectory ```dataloaders/splits``` of this repo.
 
-By running the python script ```bias_free_blocktower.py```, you can see that the BlocktowerCF dataset is close to bias-free w.r.t. the overall stability of the full blocktwer.
+## Data generation
+We also release the script for generating our counterfactual examples.
+You need to install ```pybullet``` (a simple ```pip install pybullet``` should do the job).
+And then you can run the following command line:
+```
+N=10
+DIR_OUT=/tmp/myBlocktowerCF
+python data_generation/create_blocktwer_examples.py \
+--height 3 \
+--nb-tot-examples $N \
+--masses '1-10' \
+--frictions '0.5-1' \
+--gravity '-0.5-0.5' \
+--dir-out $DIR_OUT
+```
+It will generate ```N``` examples (AB and CD sequences) in the directory ```DIR_OUT```.
+We use this data generation script for generating our dataset and then we did a massive cleaning for making sure that the dataset was unbiased w.r.t. the stability indicator.
+
+For making sure that the dataset is close to bias free you can have a look at the sanity check script ```bias_free_blocktower.py```.
+It computes some statistics about the BlocktowerCF dataset which ensure that this dataset is close to bias-free w.r.t. the overall stability of the full blocktwer.
 ```
 COPHY=<ROOT-LOCATION-OF-COPHY>
 python bias_free_blocktower.py --dir $COPHY/blocktowerCF/3 # for blocktower composed of 3 blocks
@@ -101,6 +122,20 @@ python bias_free_blocktower.py --dir $COPHY/blocktowerCF/4 # and for blocktower 
 ## Requirements
 The code was tested 16.04 with Anaconda under Python 3.6 and Pytorch-1.4.
 One GPU is required for training and testing.
+Below are the command for setting up the conda environment:
+```
+conda create --name cophy python=3.6
+source activate cophy
+conda install tqdm numpy
+conda install -c conda-forge opencv
+onda install -c conda-forge argparse
+conda install -c conda-forge imageio
+pip install imageio-ffmpeg
+conda install -c anaconda pillow
+conda install pytorch torchvision cudatoolkit=10.2 -c pytorch # code developed under torch.1.0
+pip install pybullet
+
+```
 
 ## Dataloaders
 We provide the dataloaders for each dataset in the directory ```dataloaders ``` in this repo:
